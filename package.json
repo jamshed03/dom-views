@@ -1,0 +1,38 @@
+{
+    "name": "dom-views",
+    "version": "0.1.0",
+    "description": "Tiny data-attribute-driven connector between DOM elements and JS view classes",
+    "type": "module",
+    "main": "./dist/index.cjs",
+    "module": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "import": "./dist/index.js",
+            "require": "./dist/index.cjs"
+        }
+    },
+    "files": [
+        "dist"
+    ],
+    "scripts": {
+        "build": "tsup",
+        "dev": "tsup --watch",
+        "test": "vitest run",
+        "typecheck": "tsc --noEmit"
+    },
+    "keywords": [
+        "dom",
+        "views",
+        "mutation-observer",
+        "data-attribute"
+    ],
+    "license": "MIT",
+    "devDependencies": {
+        "jsdom": "^29.1.1",
+        "tsup": "^8.5.1",
+        "typescript": "^5.9.2",
+        "vitest": "^5.0.0"
+    }
+}
