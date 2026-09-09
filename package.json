@@ -1,6 +1,6 @@
 {
     "name": "dom-views",
-    "version": "0.2.0",
+    "version": "0.3.0",
     "description": "Tiny data-attribute-driven connector between DOM elements and JS view classes",
     "type": "module",
     "main": "./dist/index.cjs",

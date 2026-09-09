@@ -1,7 +1,7 @@
 # dom-views
 
 Tiny, dependency-free connector between DOM elements and JS view classes — no build-step
-convention, no virtual DOM, just: give an element a `data-element="Name"` attribute, register a
+convention, no virtual DOM, just: give an element a `data-view="Name"` attribute, register a
 matching class, and an instance is created/destroyed automatically as that element enters/leaves
 the DOM.
 
@@ -25,7 +25,7 @@ registerViews({ Accordion });
 ```
 
 ```html
-<div data-element="Accordion">
+<div data-view="Accordion">
     <button>Section 1</button>
     ...
 </div>
@@ -53,19 +53,18 @@ instantiates/disposes the matching view automatically.
 The connector itself. Each instance tracks its own registry, its own connected elements, and its
 own pair of `MutationObserver`s — fully independent of any other instance.
 
-- `registerViews(viewClasses, options?)`
+- `registerViews(viewClasses)`
   - `viewClasses: { [name: string]: typeof View }` — the export name is the connecting key; it
-    must match the `data-element` attribute value exactly (case-sensitive).
-  - `options.attribute?: string` — the attribute name to watch, default `"data-element"`. Only
-    takes effect on this instance's very first `registerViews()` call, since the
-    `MutationObserver` is wired up once per instance.
+    must match the `data-view` attribute value exactly (case-sensitive).
+  - The connecting attribute is always `data-view` — deliberately not configurable, so templates,
+    docs and the CLI scaffold speak about the same thing in every project.
   - A single element can host multiple views via a space-separated attribute value:
-    `data-element="Header Dropdown"`.
+    `data-view="Header Dropdown"`.
 - `stopObserving()` — disconnects the observers, disposes every currently-connected view
   (`onDispose()`), and resets the instance so a later `registerViews()` starts fresh. Useful for
   tests, SPA route-unmount, or hot-module-reload; a normal single-page-load site never needs it.
 
-### `registerViews(viewClasses, options?)` / `stopObserving()`
+### `registerViews(viewClasses)` / `stopObserving()`
 
 Free-function convenience wrappers around a shared default `DomViews` instance — the entrypoint
 for the common case of one page, one registry (as in the example above). Reach for `new DomViews()`
@@ -83,7 +82,7 @@ npx dom-views create <Name>     # e.g. npx dom-views create Accordion
 
 `create` writes `<viewsDir>/<Name>/index.ts` (a minimal `View` subclass) and
 `<viewsDir>/<Name>/index.css`, then prints the two steps it does **not** do for you: adding the
-export to your barrel file, and adding `data-element="<Name>"` to the element's template. Both
+export to your barrel file, and adding `data-view="<Name>"` to the element's template. Both
 commands refuse to overwrite anything that already exists.
 
 ## Install

@@ -18,7 +18,7 @@ afterEach(() => {
 
 describe("DomViews", () => {
     it("connects an already-present element on registration", async () => {
-        document.body.innerHTML = `<div data-element="Widget"></div>`;
+        document.body.innerHTML = `<div data-view="Widget"></div>`;
 
         const connected: HTMLElement[] = [];
         class Widget extends View {
@@ -48,7 +48,7 @@ describe("DomViews", () => {
         expect(connected).toHaveLength(0);
 
         const el = document.createElement("div");
-        el.setAttribute("data-element", "Widget");
+        el.setAttribute("data-view", "Widget");
         document.body.appendChild(el);
         await flush();
 
@@ -65,7 +65,7 @@ describe("DomViews", () => {
         }
 
         const el = document.createElement("div");
-        el.setAttribute("data-element", "Widget");
+        el.setAttribute("data-view", "Widget");
         document.body.appendChild(el);
 
         views.registerViews({ Widget });
@@ -78,7 +78,7 @@ describe("DomViews", () => {
         expect(disposeSpy).toHaveBeenCalledTimes(1);
     });
 
-    it("connects when the data-element attribute is added after the fact", async () => {
+    it("connects when the data-view attribute is added after the fact", async () => {
         const connected: HTMLElement[] = [];
         class Widget extends View {
             constructor(el: HTMLElement) {
@@ -94,7 +94,7 @@ describe("DomViews", () => {
         await flush();
         expect(connected).toHaveLength(0);
 
-        el.setAttribute("data-element", "Widget");
+        el.setAttribute("data-view", "Widget");
         await flush();
 
         expect(connected).toHaveLength(1);
@@ -116,7 +116,7 @@ describe("DomViews", () => {
             }
         }
 
-        document.body.innerHTML = `<div data-element="A B"></div>`;
+        document.body.innerHTML = `<div data-view="A B"></div>`;
         views.registerViews({ A, B });
         await flush();
 
@@ -133,27 +133,11 @@ describe("DomViews", () => {
             }
         }
 
-        document.body.innerHTML = `<div data-element="NotRegistered"></div>`;
+        document.body.innerHTML = `<div data-view="NotRegistered"></div>`;
         views.registerViews({ Registered });
         await flush();
 
         expect(connected).toHaveLength(0);
-    });
-
-    it("uses a custom attribute name when configured", async () => {
-        const connected: HTMLElement[] = [];
-        class Widget extends View {
-            constructor(el: HTMLElement) {
-                super(el);
-                connected.push(el);
-            }
-        }
-
-        document.body.innerHTML = `<div data-widget="Widget"></div>`;
-        views.registerViews({ Widget }, { attribute: "data-widget" });
-        await flush();
-
-        expect(connected).toHaveLength(1);
     });
 
     it("is isolated per instance — two DomViews don't see each other's registrations", async () => {
@@ -167,7 +151,7 @@ describe("DomViews", () => {
             }
         }
 
-        document.body.innerHTML = `<div data-element="OnlyOnMain"></div>`;
+        document.body.innerHTML = `<div data-view="OnlyOnMain"></div>`;
         otherViews.registerViews({});
         views.registerViews({ OnlyOnMain });
         await flush();
@@ -185,7 +169,7 @@ describe("DomViews", () => {
                 }
             }
 
-            document.body.innerHTML = `<div data-element="Stoppable"></div>`;
+            document.body.innerHTML = `<div data-view="Stoppable"></div>`;
             views.registerViews({ Stoppable });
             await flush();
             expect(disposeSpy).not.toHaveBeenCalled();
@@ -201,7 +185,7 @@ describe("DomViews", () => {
                 }
             }
 
-            document.body.innerHTML = `<div data-element="AfterStop"></div>`;
+            document.body.innerHTML = `<div data-view="AfterStop"></div>`;
             await flush();
             expect(connectedAfterStop).toHaveLength(0);
 

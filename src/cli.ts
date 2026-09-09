@@ -7,7 +7,7 @@ Created ${name}/index.ts and ${name}/index.css.
 
 Next steps:
   1. Export "${name}" from the nearest barrel index.ts.
-  2. Add data-element="${name}" to the element's template root.
+  2. Add data-view="${name}" to the element's template root.
 `);
 }
 

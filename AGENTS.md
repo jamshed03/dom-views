@@ -5,7 +5,7 @@ Guidance for AI coding agents (Claude Code, Cursor, Aider, etc.) working in this
 ## Project overview
 
 `dom-views` is a tiny, dependency-free library that connects DOM elements to JS "view" classes via
-a `data-element="<Name>"` attribute, using a `MutationObserver` to auto-connect/disconnect
+a `data-view="<Name>"` attribute, using a `MutationObserver` to auto-connect/disconnect
 instances as matching elements enter/leave the DOM. It was extracted from a TYPO3 portfolio
 project's in-house view mini-framework (itself originally a stripped-down UIKit derivative, since
 fully modernized and decoupled from anything project-specific). Not published to npm — consumed by
@@ -44,13 +44,12 @@ type is a real regression for a consumer, not just a local inconvenience.
 ## Architecture
 
 `DomViews` (`src/dom-views.ts`) holds all state as instance fields (`registry`, an
-`instances: WeakMap<Element, { [name: string]: View }>`, `attribute`, `started`, the two
-`MutationObserver`s) — no module-level singleton state, so instances are fully isolated from each
-other. `registerViews(viewClasses, options?)` is the entrypoint a consumer calls; on an instance's
-first call it:
-1. Scans `document.body` (itself + all descendants) for elements carrying the connecting attribute
-   (default `data-element`, configurable via `options.attribute` — **only on that instance's very
-   first call**, since its `MutationObserver`s are wired up once per instance).
+`instances: WeakMap<Element, { [name: string]: View }>`, `started`, the two `MutationObserver`s) —
+no module-level singleton state, so instances are fully isolated from each other. The connecting
+attribute itself is the one exception: a module-level `ATTRIBUTE` const, fixed at `data-view` and
+deliberately not configurable, so every project's templates, docs and CLI scaffold agree on it.
+`registerViews(viewClasses)` is the entrypoint a consumer calls; on an instance's first call it:
+1. Scans `document.body` (itself + all descendants) for elements carrying `data-view`.
 2. Instantiates the matching registered class for each element, tracked via the instance's
    `WeakMap` — no property is ever stashed on the DOM element itself, so this library needs zero
    global `Element` type augmentation.
@@ -59,10 +58,10 @@ first call it:
    fact).
 
 A single element can host multiple views via a space-separated attribute value
-(`data-element="Header Dropdown"`).
+(`data-view="Header Dropdown"`).
 
 `stopObserving()` disconnects both observers, disposes every currently-connected view via
-`onDispose()`, and resets the instance (registry cleared, attribute back to default) — full
+`onDispose()`, and resets the instance (registry cleared) — full
 teardown, needed for tests and useful for SPA-style unmounts/HMR. Normal page-lifetime usage never
 needs to call it.
 
@@ -74,7 +73,7 @@ exports, for the common single-registry case.
 
 `connect()` used to create a **new** `{}` object per matched name inside its loop instead of
 reusing/accumulating into one target object, so an element with two space-separated names
-(`data-element="A B"`) would silently lose the first view's `WeakMap` registration — triggering a
+(`data-view="A B"`) would silently lose the first view's `WeakMap` registration — triggering a
 duplicate instantiation on any subsequent `connect()` call for that same element (e.g. via the
 attribute-mutation observer re-firing). Fixed by computing the target object **once** per call and
 writing it to the `WeakMap` **once**, after the loop. The multi-name test in
@@ -111,8 +110,7 @@ relax them without re-checking the reasoning:
   a DOM mutation before asserting on connect/disconnect side effects.
 - Give each test its own `new DomViews()` instance (see `beforeEach` in `test/dom-views.test.ts`)
   and call `stopObserving()` in `afterEach`. Because state lives on the instance, this gives full
-  per-test isolation — including for `options.attribute`, which no longer needs its own dedicated
-  test file the way the earlier module-singleton design did.
+  per-test isolation, without the dedicated test files the earlier module-singleton design needed.
 - History note: an earlier, module-function-based version of this connector (state in module
   closures, not a class) required `vi.resetModules()` + dynamic re-import to fake per-test
   isolation, which leaked a growing number of live `MutationObserver`s onto the shared `jsdom`

@@ -1,22 +1,19 @@
 import { View, ViewClassMap } from "./view";
 
-export interface RegisterViewsOptions {
-    attribute?: string;
-}
+/**
+ * The attribute that connects an element to its view classes. Fixed on purpose: one value across
+ * every project means templates, docs and the CLI scaffold can all speak about the same thing.
+ */
+const ATTRIBUTE = "data-view";
 
 export class DomViews {
     private registry: ViewClassMap = {};
     private instances = new WeakMap<Element, { [name: string]: View }>();
-    private attribute = "data-element";
     private started = false;
     private childObserver?: MutationObserver;
     private attributeObserver?: MutationObserver;
 
-    registerViews(viewClasses: ViewClassMap, options: RegisterViewsOptions = {}): void {
-        if (!this.started && options.attribute) {
-            this.attribute = options.attribute;
-        }
-
+    registerViews(viewClasses: ViewClassMap): void {
         Object.assign(this.registry, viewClasses);
 
         if (this.started) {
@@ -43,7 +40,6 @@ export class DomViews {
 
         this.registry = {};
         this.started = false;
-        this.attribute = "data-element";
     }
 
     private start(): void {
@@ -64,13 +60,13 @@ export class DomViews {
         );
         this.attributeObserver.observe(document, {
             attributes: true,
-            attributeFilter: [this.attribute],
+            attributeFilter: [ATTRIBUTE],
             subtree: true,
         });
     }
 
     private elementNames(el: Element): string[] {
-        const value = el.getAttribute(this.attribute);
+        const value = el.getAttribute(ATTRIBUTE);
         return value ? value.split(/\s+/) : [];
     }
 
@@ -110,17 +106,17 @@ export class DomViews {
     }
 
     private connectSubtree(root: Element): void {
-        if (root.matches(`[${this.attribute}]`)) {
+        if (root.matches(`[${ATTRIBUTE}]`)) {
             this.connect(root);
         }
-        root.querySelectorAll(`[${this.attribute}]`).forEach((el) => this.connect(el));
+        root.querySelectorAll(`[${ATTRIBUTE}]`).forEach((el) => this.connect(el));
     }
 
     private disconnectSubtree(root: Element): void {
-        if (root.matches(`[${this.attribute}]`)) {
+        if (root.matches(`[${ATTRIBUTE}]`)) {
             this.disconnect(root);
         }
-        root.querySelectorAll(`[${this.attribute}]`).forEach((el) => this.disconnect(el));
+        root.querySelectorAll(`[${ATTRIBUTE}]`).forEach((el) => this.disconnect(el));
     }
 
     private applyChildListMutation({ addedNodes, removedNodes }: MutationRecord): void {
